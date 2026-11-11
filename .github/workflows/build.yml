@@ -1,0 +1,85 @@
+name: Build Neon Focus APK
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Get game files (first run pulls them from the live site)
+        run: |
+          mkdir -p www/fonts
+          if [ ! -f www/index.html ]; then
+            for f in index.html manifest.webmanifest sw.js icon-192.png; do
+              curl -fsSL "https://neon-focus-six.vercel.app/$f" -o "www/$f"
+            done
+          fi
+          if [ ! -f www/fonts/orbitron-latin-900-normal.woff2 ]; then
+            mkdir -p /tmp/f && (cd /tmp/f && npm i @fontsource/orbitron @fontsource/inter)
+            cp /tmp/f/node_modules/@fontsource/orbitron/files/orbitron-latin-{600,900}-normal.woff2 www/fonts/
+            cp /tmp/f/node_modules/@fontsource/inter/files/inter-latin-{400,600,800}-normal.woff2 www/fonts/
+          fi
+      - name: Save game files into the repo
+        run: |
+          git config user.name "neon-focus-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add www
+          git diff --cached --quiet || (git commit -m "Add game files" && git push)
+      - name: Build Android app
+        run: |
+          cat > package.json <<'J'
+          {"name":"neon-focus","version":"0.2.0","private":true}
+          J
+          cat > capacitor.config.json <<'J'
+          {"appId":"co.afterhours.neonfocus","appName":"Neon Focus","webDir":"www","backgroundColor":"#07020f","android":{"backgroundColor":"#07020f"}}
+          J
+          npm i @capacitor/core@latest @capacitor/android@latest
+          npm i -D @capacitor/cli@latest
+          npx cap add android
+          sed -i 's/android:name=".MainActivity"/android:name=".MainActivity"\n            android:screenOrientation="portrait"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/#FFFFFF/#07020F/I' android/app/src/main/res/values/ic_launcher_background.xml || true
+          pip install pillow
+          python3 - <<'P'
+          from PIL import Image, ImageDraw, ImageFilter
+          def icon(size):
+              S=size*4
+              im=Image.new('RGBA',(S,S),(7,2,15,255));d=ImageDraw.Draw(im)
+              for y in range(S):
+                  t=y/S;d.line([(0,y),(S,y)],fill=(int(7+35*t),int(2+6*t),int(15+41*t),255))
+              g=Image.new('RGBA',(S,S),(0,0,0,0));gd=ImageDraw.Draw(g)
+              c=S//2;r=int(S*0.30)
+              gd.ellipse([c-r,c-r,c+r,c+r],outline=(255,61,242,255),width=S//18)
+              tr=int(r*0.55);gd.polygon([(c,c-tr),(c+tr,c+int(tr*.7)),(c-tr,c+int(tr*.7))],fill=(34,230,255,255))
+              im=Image.alpha_composite(im,g.filter(ImageFilter.GaussianBlur(S//30)));im=Image.alpha_composite(im,g)
+              return im.resize((size,size),Image.LANCZOS)
+          src=icon(1024);base='android/app/src/main/res'
+          for k,s in {'mdpi':48,'hdpi':72,'xhdpi':96,'xxhdpi':144,'xxxhdpi':192}.items():
+              for n in ['ic_launcher.png','ic_launcher_round.png']:
+                  src.resize((s,s),Image.LANCZOS).save(f'{base}/mipmap-{k}/{n}')
+              F=int(s*2.25);cv=Image.new('RGBA',(F,F),(7,2,15,255));i=int(F*0.72)
+              cv.paste(src.resize((i,i),Image.LANCZOS),((F-i)//2,)*2);cv.save(f'{base}/mipmap-{k}/ic_launcher_foreground.png')
+          P
+          cd android && chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk ../NeonFocus.apk
+      - name: Publish download link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.2.${{ github.run_number }}
+          name: Neon Focus v0.2 (build ${{ github.run_number }})
+          make_latest: true
+          files: NeonFocus.apk
+          body: |
+            Download NeonFocus.apk below and open it on an Android phone.
+            Permanent link to the newest build: https://github.com/${{ github.repository }}/releases/latest/download/NeonFocus.apk
