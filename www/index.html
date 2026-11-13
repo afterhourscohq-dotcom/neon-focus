@@ -91,6 +91,16 @@ h1{font-family:OrbitronL,Orbitron,system-ui,sans-serif;font-weight:900;font-size
 .how b{color:var(--cyan)}
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 24px);transform:translateX(-50%) translateY(20px);background:rgba(20,8,40,.95);border:1px solid var(--line);border-radius:14px;padding:12px 18px;font-weight:700;font-size:14px;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.probtn{background:linear-gradient(90deg,rgba(255,210,61,.15),rgba(255,61,242,.15));border:1.5px solid rgba(255,210,61,.5);border-radius:14px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:13px;letter-spacing:1px}
+.probtn b{font-family:OrbitronL,Orbitron,system-ui,sans-serif;color:var(--gold)}
+.lock{font-size:11px;margin-left:6px;opacity:.8}
+.perk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;font-size:14px;font-weight:600;text-align:left}
+.perk i{font-style:normal;color:var(--gold);flex-shrink:0}
+#price{font-family:OrbitronL,Orbitron,system-ui,sans-serif;font-size:40px;font-weight:900;color:var(--gold)}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.theme{border:2px solid var(--line);border-radius:12px;padding:12px 4px;font-size:11px;font-weight:800;letter-spacing:1px}
+.theme.on{border-color:var(--cyan);box-shadow:0 0 14px rgba(34,230,255,.4)}
+#chart{position:static;inset:auto;width:100%;height:150px;display:block}
 </style>
 </head>
 <body>
@@ -128,8 +138,10 @@ h1{font-family:OrbitronL,Orbitron,system-ui,sans-serif;font-weight:900;font-size
     <div class="stat"><b id="mRuns">0</b><span>RUNS</span></div>
     <div class="stat"><b id="mPeak">1.0</b><span>TOP SPEED</span></div>
   </div>
+  <button class="probtn" id="proBtn"><span>NEON FOCUS <b>PRO</b></span><span id="proTag">See what's in it →</span></button>
   <div class="bar3">
     <button class="ghost" id="howBtn">HOW TO PLAY</button>
+    <button class="ghost" id="statsBtn">STATS</button>
     <button class="ghost" id="setBtn">SETTINGS</button>
   </div>
   <p class="fine">A focus game, not a medical treatment. No ads. Works offline.</p>
@@ -156,6 +168,37 @@ h1{font-family:OrbitronL,Orbitron,system-ui,sans-serif;font-weight:900;font-size
   <div class="card" style="padding:4px 16px" id="toggles"></div>
   <button class="ghost" id="setBack">DONE</button>
   <p class="fine">Progress is saved on this device.</p>
+</div>
+
+<!-- PRO -->
+<div id="pro" class="screen center hidden">
+  <h1 style="font-size:30px">NEON FOCUS<br>PRO</h1>
+  <div id="price">$4.99</div>
+  <div class="fine" style="opacity:.7;margin-top:-10px">One time. No subscription. Yours forever.</div>
+  <div class="card">
+    <div class="perk"><i>✦</i><span><b>Zen mode</b> — no timer, no penalties, chill beats</span></div>
+    <div class="perk"><i>✦</i><span><b>Daily Challenge</b> — same run as everyone, every day</span></div>
+    <div class="perk"><i>✦</i><span><b>Stats</b> — watch your focus, switching and self-control improve</span></div>
+    <div class="perk"><i>✦</i><span><b>Themes</b> — Neon, Sunset and Ice</span></div>
+    <div class="perk"><i>✦</i><span><b>Every future mini-game</b> included free</span></div>
+  </div>
+  <button class="btn" id="buyBtn">UNLOCK PRO</button>
+  <p class="tip" id="proNote"></p>
+  <button class="ghost" id="restoreBtn">RESTORE PURCHASE</button>
+  <button class="ghost" id="proBack">BACK</button>
+</div>
+
+<!-- STATS -->
+<div id="stats" class="screen hidden">
+  <h1 style="font-size:30px">STATS</h1>
+  <div class="card"><h3><span>LAST 30 CLASSIC RUNS</span><span id="stRuns"></span></h3><canvas id="chart"></canvas></div>
+  <div class="stats">
+    <div class="stat"><b id="stAvg">0</b><span>AVG SCORE</span></div>
+    <div class="stat"><b id="stAcc">0%</b><span>AVG ACCURACY</span></div>
+    <div class="stat"><b id="stSc">0%</b><span>SELF-CONTROL</span></div>
+  </div>
+  <div class="card"><h3><span>THEME</span></h3><div class="themes" id="themes"></div></div>
+  <button class="ghost" id="statsBack">BACK</button>
 </div>
 
 <!-- PAUSE -->
@@ -211,12 +254,23 @@ addEventListener('resize',resize);
 // ---------- save ----------
 const KEY='neonfocus.v2';
 const prefersRM=(()=>{try{return matchMedia('(prefers-reduced-motion: reduce)').matches}catch(e){return false}})();
-let save={best:0,runs:0,xp:0,peak:1,streak:0,last:'',shield:1,tutDone:false,
+let save={best:0,runs:0,xp:0,peak:1,streak:0,last:'',shield:1,tutDone:false,pro:false,founder:false,theme:'neon',hist:[],
   set:{sound:true,music:true,haptics:true,cb:false,rm:prefersRM},
   daily:{day:'',best:0,plays:0},quests:{day:'',list:[]}};
 try{const old=JSON.parse(localStorage.getItem('neonfocus.v1')||'null');if(old){save.best=old.best||0;save.runs=old.runs||0;save.xp=old.xp||0;save.peak=old.peak||1;save.streak=old.streak||0;save.last=old.last||''}}catch(e){}
 try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s){Object.assign(save,s);save.set=Object.assign({sound:true,music:true,haptics:true,cb:false,rm:prefersRM},s.set||{})}}catch(e){}
 const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+// ---------- Pro ----------
+// BILLING_LIVE stays false until Google Play billing is wired in. Until then everyone gets Pro,
+// and anyone who plays before launch is marked a founder and keeps Pro for free afterwards.
+const BILLING_LIVE=false, PRO_PRICE='$4.99';
+if(!BILLING_LIVE&&!save.founder){save.founder=true;try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}}
+const isPro=()=>save.pro||save.founder||!BILLING_LIVE;
+if(!Array.isArray(save.hist))save.hist=[];
+const THEMES={neon:{name:'NEON',bg:['#07020f','#12052c','#2b0939'],grid:'255,61,242'},
+  sunset:{name:'SUNSET',bg:['#12040a','#3a0b22','#7a2418'],grid:'255,150,60'},
+  ice:{name:'ICE',bg:['#020a14','#062440','#0d4a6b'],grid:'120,220,255'}};
+const theme=()=>THEMES[isPro()&&THEMES[save.theme]?save.theme:'neon'];
 const dayStr=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const today=()=>dayStr(new Date());
 const daysAgo=n=>dayStr(new Date(Date.now()-n*864e5));
@@ -298,7 +352,7 @@ function start(mode){
   if(G.count>0)tone(440,.12,'square',.07);
   Mus.start();
 }
-function hideAll(){['menu','over','how','settings','pause','tutDone'].forEach(i=>$(i).classList.add('hidden'))}
+function hideAll(){['menu','over','how','settings','pause','tutDone','pro','stats'].forEach(i=>$(i).classList.add('hidden'))}
 
 function showRule(){
   const el=$('rule');el.style.display='flex';el.classList.remove('warn');
@@ -432,15 +486,15 @@ function drawShape(o){
   cx.restore();
 }
 function drawBg(dt){
-  const g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#07020f');g.addColorStop(.55,'#12052c');g.addColorStop(1,'#2b0939');
+  const T=theme(),g=cx.createLinearGradient(0,0,0,H);g.addColorStop(0,T.bg[0]);g.addColorStop(.55,T.bg[1]);g.addColorStop(1,T.bg[2]);
   cx.fillStyle=g;cx.fillRect(0,0,W,H);
   const sp=G&&running?(40+G.diff*14):18;
   for(const s of stars){s.y+=dt*sp*s.z/H*1.4;if(s.y>1)s.y-=1;cx.globalAlpha=.25+s.z*.5;cx.fillStyle='#fff';cx.fillRect(s.x*W,s.y*H,s.z*2,s.z*2)}
   cx.globalAlpha=1;
   gridOff=(gridOff+dt*sp)%40;
   const hz=H*.62;
-  const hg=cx.createLinearGradient(0,hz-60,0,hz+20);hg.addColorStop(0,'rgba(255,61,242,0)');hg.addColorStop(1,'rgba(255,61,242,.16)');cx.fillStyle=hg;cx.fillRect(0,hz-60,W,80);
-  cx.strokeStyle='rgba(255,61,242,.22)';cx.lineWidth=1;cx.beginPath();
+  const hg=cx.createLinearGradient(0,hz-60,0,hz+20);hg.addColorStop(0,'rgba('+T.grid+',0)');hg.addColorStop(1,'rgba('+T.grid+',.16)');cx.fillStyle=hg;cx.fillRect(0,hz-60,W,80);
+  cx.strokeStyle='rgba('+T.grid+',.22)';cx.lineWidth=1;cx.beginPath();
   for(let i=0;i<12;i++){const t=((i*40+gridOff)%480)/480,y=hz+(H-hz)*t*t;cx.moveTo(0,y);cx.lineTo(W,y)}
   for(let i=-10;i<=10;i++){cx.moveTo(W/2+i*20,hz);cx.lineTo(W/2+i*W*.16,H)}
   cx.stroke();
@@ -521,6 +575,7 @@ function end(quit){
   const before=lvlFor(save.xp).l;
   const counts=G.mode!=='zen'&&!(quit&&G.elapsed<10);
   const newBest=counts&&G.mode==='classic'&&G.score>save.best;
+  if(counts&&G.mode==='classic'){save.hist.push({d:today(),s:G.score,a:acc,sc:G.stopsDone?Math.round(G.stopsClean/G.stopsDone*100):null});if(save.hist.length>30)save.hist=save.hist.slice(-30)}
   if(counts){save.runs++;if(G.mode==='classic')save.best=Math.max(save.best,G.score);save.peak=Math.max(save.peak,Math.round(G.topDiff*10)/10)}
   if(G.mode==='daily'){if(save.daily.day!==today())save.daily={day:today(),best:0,plays:0};save.daily.plays++;save.daily.best=Math.max(save.daily.best,G.score)}
   save.xp+=xp;
@@ -570,7 +625,40 @@ function menu(){
   $('xpFill').style.width=(L.into/L.need*100)+'%';
   $('mBest').textContent=save.best;$('mRuns').textContent=save.runs;$('mPeak').textContent=(+save.peak).toFixed(1);
   $('dailySub').textContent=save.daily.day===today()&&save.daily.plays?'Today\'s best: '+save.daily.best:'Same run for everyone today';
+  const lk=isPro()?'':'<span class="lock">🔒</span>';
+  $('dailyBtn').querySelector('b').innerHTML='DAILY'+lk;$('zenBtn').querySelector('b').innerHTML='ZEN'+lk;
+  $('proTag').textContent=save.pro?'Unlocked ✓':(!BILLING_LIVE?'Free in early access ✓':save.founder?'Founder — unlocked ✓':'See what\'s in it →');
   renderQuests();hideAll();$('menu').classList.remove('hidden');
+}
+function proScreen(){
+  $('price').textContent=PRO_PRICE;
+  const b=$('buyBtn');
+  if(save.pro||save.founder||!BILLING_LIVE){b.textContent='PRO UNLOCKED ✓';b.disabled=true;b.style.opacity=.7;
+    $('proNote').textContent=!BILLING_LIVE?'Pro is free during early access. Play before launch and you keep it free forever as a founding player.':save.founder?'You\'re a founding player. Pro is yours free, forever.':'Thanks for supporting Neon Focus!'}
+  else{b.textContent='UNLOCK PRO · '+PRO_PRICE;b.disabled=false;b.style.opacity=1;$('proNote').textContent='Purchases go through Google Play.'}
+  hideAll();$('pro').classList.remove('hidden');$('pro').scrollTop=0;
+}
+function gate(fn){return()=>isPro()?fn():proScreen()}
+function statsScreen(){
+  if(!isPro())return proScreen();
+  const h=save.hist,avg=k=>{const v=h.map(x=>x[k]).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null};
+  $('stRuns').textContent=h.length+' runs';$('stAvg').textContent=avg('s')??'—';
+  const a=avg('a'),sc=avg('sc');$('stAcc').textContent=a==null?'—':a+'%';$('stSc').textContent=sc==null?'—':sc+'%';
+  $('themes').innerHTML=Object.keys(THEMES).map(k=>'<button class="theme'+(save.theme===k?' on':'')+'" data-t="'+k+'" style="background:linear-gradient(180deg,'+THEMES[k].bg[1]+','+THEMES[k].bg[2]+')">'+THEMES[k].name+'</button>').join('');
+  document.querySelectorAll('.theme').forEach(b=>b.onclick=()=>{save.theme=b.dataset.t;persist();statsScreen()});
+  hideAll();$('stats').classList.remove('hidden');
+  requestAnimationFrame(()=>drawChart(h));
+}
+function drawChart(h){
+  const c=$('chart'),r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);c.width=r.width*d;c.height=r.height*d;
+  const x=c.getContext('2d');x.scale(d,d);const w=r.width,ht=r.height;x.clearRect(0,0,w,ht);
+  if(h.length<2){x.fillStyle='rgba(255,255,255,.5)';x.font='600 13px InterL, Inter, sans-serif';x.textAlign='center';x.fillText('Play a few Classic runs to see your trend',w/2,ht/2);return}
+  const mx=Math.max(...h.map(p=>p.s),100),px=i=>8+i*(w-16)/(h.length-1),py=v=>ht-10-(v/mx)*(ht-24);
+  x.strokeStyle='rgba(255,255,255,.08)';x.beginPath();for(let i=0;i<4;i++){const y=10+i*(ht-20)/3;x.moveTo(0,y);x.lineTo(w,y)}x.stroke();
+  const gr=x.createLinearGradient(0,0,w,0);gr.addColorStop(0,'#22e6ff');gr.addColorStop(1,'#ff3df2');
+  x.strokeStyle=gr;x.lineWidth=3;x.lineJoin='round';x.shadowColor='#ff3df2';x.shadowBlur=10;x.beginPath();
+  h.forEach((p,i)=>i?x.lineTo(px(i),py(p.s)):x.moveTo(px(i),py(p.s)));x.stroke();x.shadowBlur=0;
+  const l=h[h.length-1];x.fillStyle='#ffd23d';x.beginPath();x.arc(px(h.length-1),py(l.s),5,0,6.283);x.fill();
 }
 const TOG=[['sound','Sound effects',''],['music','Music','Synth beat that speeds up with you'],['haptics','Vibration',''],
   ['cb','Colorblind mode','Blue / orange / white + marks inside shapes'],['rm','Reduce motion','No screen shake or flashes, fewer particles']];
@@ -591,8 +679,11 @@ addEventListener('keydown',e=>{if(!running)return;if(e.key==='Escape'||e.key==='
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pause()});
 
 $('playBtn').onclick=()=>save.tutDone?start('classic'):start('tut');
-$('dailyBtn').onclick=()=>start('daily');
-$('zenBtn').onclick=()=>start('zen');
+$('dailyBtn').onclick=gate(()=>start('daily'));
+$('zenBtn').onclick=gate(()=>start('zen'));
+$('proBtn').onclick=proScreen;$('proBack').onclick=menu;$('statsBtn').onclick=statsScreen;$('statsBack').onclick=menu;
+$('buyBtn').onclick=()=>{if(!BILLING_LIVE)return;toast('Opening Google Play…')};
+$('restoreBtn').onclick=()=>toast(isPro()?'Pro is already unlocked on this device':'No purchase found');
 $('again').onclick=()=>start($('again').dataset.mode||'classic');
 $('home').onclick=menu;
 $('howBtn').onclick=()=>{hideAll();$('how').classList.remove('hidden')};
