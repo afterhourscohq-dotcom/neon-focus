@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>After Hours Co. — software and app development</title>
+<meta name="description" content="After Hours Co. is a New Hampshire software studio building web and mobile applications and developer tools.">
+<meta name="theme-color" content="#182040">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;800;900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --dusk:#182040;      /* sky right after sunset */
+    --slate:#262F57;     /* rows, panels */
+    --sodium:#F5A524;    /* streetlight / shop light */
+    --frost:#E9E6F2;     /* text */
+    --haze:#A9A8C6;      /* secondary text */
+    --signal:#6FD3C1;    /* links */
+    --display:"Big Shoulders Display", "Arial Narrow", sans-serif;
+    --body:"Atkinson Hyperlegible", system-ui, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{background:var(--dusk);color:var(--frost)}
+  body{margin:0;font:18px/1.6 var(--body);-webkit-font-smoothing:antialiased}
+  a{color:var(--signal);text-underline-offset:3px}
+  a:hover{color:var(--frost)}
+  :focus-visible{outline:3px solid var(--sodium);outline-offset:3px;border-radius:2px}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+  /* Masthead */
+  .mast{display:flex;justify-content:space-between;align-items:baseline;padding-block:28px}
+  .logo{font:900 26px/1 var(--display);letter-spacing:.02em;color:var(--frost);text-decoration:none}
+  .logo span{color:var(--sodium)}
+  .mast nav a{color:var(--haze);text-decoration:none;margin-left:22px;font-size:16px}
+  .mast nav a:hover{color:var(--frost)}
+
+  /* Night sky + skyline behind header and hero */
+  .night{position:relative;overflow:hidden;
+    background:
+      radial-gradient(120% 60% at 50% 100%, rgba(245,165,36,.18), transparent 60%),
+      radial-gradient(80% 50% at 85% 0%, rgba(111,211,193,.10), transparent 60%),
+      linear-gradient(180deg,#10162f 0%,var(--dusk) 70%)}
+  .night > *{position:relative;z-index:1}
+  #sky{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
+
+  /* Hero: the shop clock */
+  .hero{padding-block:56px 230px}
+  .clock{font:900 clamp(96px,22vw,260px)/.82 var(--display);letter-spacing:-.01em;margin:0;color:var(--frost);font-variant-numeric:tabular-nums}
+  .clock .ampm{font-size:.32em;letter-spacing:.04em;color:var(--haze);margin-left:.15em}
+  .clock.open{color:#FFD27A;text-shadow:0 0 6px rgba(255,210,122,.9),0 0 22px rgba(245,165,36,.85),0 0 60px rgba(245,165,36,.55),0 0 120px rgba(245,165,36,.35)}
+  .clock.open .ampm{color:var(--signal);text-shadow:0 0 10px rgba(111,211,193,.8),0 0 30px rgba(111,211,193,.45)}
+  .clock.flicker{animation:neonOn 1.6s steps(1,end) both}
+  @keyframes neonOn{0%{opacity:.12}6%{opacity:1}9%{opacity:.25}13%{opacity:1}18%{opacity:.4}21%{opacity:1}34%{opacity:.7}36%,100%{opacity:1}}
+  .status{font:800 clamp(30px,4.6vw,52px)/1.08 var(--display);margin:22px 0 0;max-width:20ch}
+  .lede{max-width:56ch;color:var(--haze);margin:22px 0 0;font-size:19px}
+  .lede strong{color:var(--frost);font-weight:700}
+  .where{margin-top:10px;font-size:15px;color:var(--haze)}
+
+  /* Work ledger */
+  .work h2,.about h2{font:800 40px/1.1 var(--display);margin:0 0 6px}
+  .work > p{color:var(--haze);margin:0 0 28px;max-width:56ch}
+  #work{padding-block-start:80px}
+  .recent{padding-block-start:72px}
+  .recent h2{margin-bottom:24px}
+  .ledger{list-style:none;margin:0;padding:0;border-top:2px solid var(--slate)}
+  .ledger li{position:relative;--accent:var(--sodium);display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1.6fr) minmax(0,.9fr);gap:28px;padding:30px 0;border-bottom:2px solid var(--slate)}
+  .ledger li::before{content:"";position:absolute;left:-24px;top:22px;bottom:22px;width:4px;border-radius:4px;background:var(--accent);box-shadow:0 0 14px var(--accent),0 0 32px var(--accent);opacity:.35;transform:scaleY(.4);transition:transform .35s ease,opacity .35s ease}
+  .ledger li:hover::before,.ledger li:focus-within::before{opacity:1;transform:scaleY(1)}
+  .ledger h3{font:800 30px/1.05 var(--display);margin:0;transition:color .3s ease,text-shadow .3s ease}
+  .ledger li:hover h3,.ledger li:focus-within h3{color:var(--accent);text-shadow:0 0 18px color-mix(in srgb,var(--accent) 60%,transparent)}
+  .ledger .kind{color:var(--accent)}
+  .ledger li.c-unity{--accent:#C9C4FF}
+  .ledger li.c-nownext{--accent:var(--signal)}
+  .ledger li.c-neon{--accent:#FF5BD8}
+  .ledger li.c-stack{--accent:#B9F33A}
+  .ledger li.c-pup{--accent:#2EF2FF}
+  .ledger li.c-field{--accent:#FF8A3D}
+  .ledger li.c-app{--accent:var(--sodium)}
+  .ledger li.c-tools{--accent:#8FB8FF}
+  .ledger .kind{font-size:15px;margin:6px 0 0}
+  .ledger .what{margin:0;max-width:52ch}
+  .ledger .go{margin:0;font-size:16px;color:var(--haze);align-self:start}
+  .ledger .go a{display:inline-block;font-weight:700}
+  .pill{display:inline-block;font-size:14px;padding:2px 10px;border:1.5px solid var(--haze);border-radius:999px;color:var(--haze)}
+  .pill.live{border-color:var(--signal);color:var(--signal)}
+  .clip{grid-column:1 / -1;margin:6px 0 0;max-width:760px}
+  .clip video{display:block;width:100%;aspect-ratio:16/9;background:#05070c;border:2px solid var(--slate);border-radius:14px;box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent),0 0 34px color-mix(in srgb,var(--accent) 22%,transparent)}
+  .clip figcaption{font-size:15px;color:var(--haze);margin-top:8px}
+
+  /* About */
+  .about{padding-block:96px 40px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:48px}
+  .about p{margin:0 0 16px;max-width:58ch}
+  .shift{list-style:none;margin:0;padding:0;font-size:16px}
+  .shift li{display:flex;gap:16px;padding:10px 0;border-bottom:1px solid var(--slate)}
+  .shift time{font:800 22px/1.2 var(--display);color:var(--sodium);min-width:5.5ch;font-variant-numeric:tabular-nums}
+
+  /* Contact */
+  .contact{padding-block:72px 96px}
+  .contact h2{font:900 clamp(32px,9vw,96px)/.95 var(--display);margin:0;overflow-wrap:anywhere}
+  .contact h2 a{color:var(--frost);text-decoration-thickness:4px;text-decoration-color:var(--sodium)}
+  .contact h2 a:hover,.contact h2 a:focus-visible{color:var(--sodium);text-shadow:0 0 24px rgba(245,165,36,.55)}
+  .contact h2 a{transition:color .3s ease,text-shadow .3s ease}
+  .contact p{color:var(--haze);margin:18px 0 0;max-width:52ch}
+  footer{border-top:2px solid var(--slate);padding-block:24px 40px;color:var(--haze);font-size:14px}
+
+  @media (max-width:760px){
+    body{font-size:17px}
+    .mast nav a{margin-left:14px}
+    .hero{padding-block:24px 64px}
+    .ledger li{grid-template-columns:1fr;gap:10px}
+    .about{grid-template-columns:1fr;gap:24px;padding-block-start:72px}
+  }
+  @media (prefers-reduced-motion:no-preference){
+    .clock{transition:color .8s ease, text-shadow .8s ease}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .clock.flicker{animation:none}
+    .ledger li::before,.ledger h3,.contact h2 a{transition:none}
+  }
+  @media (max-width:760px){
+    .hero{padding-block:24px 210px}
+    #work{padding-block-start:56px}
+    .ledger li::before{left:-14px}
+  }
+</style>
+</head>
+<body>
+<main>
+<div class="night">
+<canvas id="sky" aria-hidden="true"></canvas>
+<header class="wrap mast">
+  <a class="logo" href="/">After Hours <span>Co.</span></a>
+  <nav aria-label="Main">
+    <a href="#work">Work</a>
+    <a href="#contact">Contact</a>
+  </nav>
+</header>
+
+  <section class="wrap hero" aria-labelledby="status">
+    <p class="clock" id="clock" aria-hidden="true">6:00<span class="ampm">PM</span></p>
+    <h1 class="status" id="status">The shop opens when the day job ends.</h1>
+    <p class="lede"><strong>After Hours Co.</strong> is a software studio in New Hampshire. I build web and mobile applications and developer tools, and I do it after the day job ends.</p>
+    <p class="where" id="where">New Hampshire time</p>
+  </section>
+</div>
+
+  <section class="wrap work" id="work" aria-labelledby="work-h">
+    <h2 id="work-h">What I build</h2>
+    <p>Software development for small businesses, trades and creators. You talk to the person writing the code.</p>
+    <ul class="ledger">
+      <li class="c-app">
+        <div>
+          <h3>Application development</h3>
+          <p class="kind">Web and mobile apps</p>
+        </div>
+        <p class="what">Apps people actually use on the job: booking and job tracking, customer portals, internal dashboards, and phone apps that keep working offline. I take it from the first sketch to a live, hosted app.</p>
+        <p class="go">Good for a business that's outgrown spreadsheets and paper.<br><a href="mailto:hq@afterhoursco.dev?subject=App%20project">Start an app project</a></p>
+      </li>
+      <li class="c-tools">
+        <div>
+          <h3>Developer tools</h3>
+          <p class="kind">Plugins and automation</p>
+        </div>
+        <p class="what">Editor plugins, scripts and internal tools that take repetitive work off your plate, including AI features that explain errors and suggest fixes inside the tools you already use.</p>
+        <p class="go">Good for teams and solo developers who keep doing the same task by hand.<br><a href="mailto:hq@afterhoursco.dev?subject=Developer%20tool">Ask about a tool</a></p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="wrap work recent" aria-labelledby="recent-h">
+    <h2 id="recent-h">Recent work</h2>
+    <ul class="ledger">
+      <li class="c-unity">
+        <div>
+          <h3>Claude Unity Assistant</h3>
+          <p class="kind">Unity plugin</p>
+        </div>
+        <p class="what">A free, open-source Unity plugin that reads your console errors, suggests fixes, and has an in-editor chat. A Pro tier adds more for heavy users.</p>
+        <p class="go"><span class="pill live">Free, open source</span><br><a href="https://github.com/slimjim202520/claude-unity-assistant">Get it on GitHub</a></p>
+      </li>
+      <li class="c-nownext">
+        <div>
+          <h3>NowNext</h3>
+          <p class="kind">Phone and web app</p>
+        </div>
+        <p class="what">A calendar, notes and journal app built for ADHD brains. Reminders keep nudging until the task is actually done, and it installs to your home screen like a regular app.</p>
+        <p class="go"><span class="pill live">Live</span><br><a href="https://nownext.afterhoursco.dev">Try NowNext</a></p>
+        <figure class="clip"><video controls playsinline preload="none" poster="https://fieldguide.afterhoursco.dev/promo/nownext-ad.jpg" aria-label="NowNext trailer"><source src="https://fieldguide.afterhoursco.dev/promo/nownext-ad.mp4" type="video/mp4"></video><figcaption>NowNext in 30 seconds</figcaption></figure>
+      </li>
+      <li class="c-neon">
+        <div>
+          <h3>Neon Focus</h3>
+          <p class="kind">Phone game</p>
+        </div>
+        <p class="what">A fast focus game: catch only what the rule says while the rule keeps flipping, and keep your hands off when the screen goes red. Difficulty adapts to you, with daily runs, quests, stats and a colorblind mode. Free to play with no ads and no subscription; Neon Focus Pro is a one-time $4.99 unlock (free for early players).</p>
+        <p class="go"><span class="pill live">Live</span><br><a href="https://neonfocus.afterhoursco.dev">Play Neon Focus</a><br><a href="https://github.com/afterhourscohq-dotcom/neon-focus/releases/latest/download/NeonFocus.apk">Android download</a><br><span class="pill">Google Play and App Store soon</span><br><small><a href="https://neonfocus.afterhoursco.dev/privacy/">Privacy</a> &middot; <a href="https://neonfocus.afterhoursco.dev/support/">Support</a></small></p>
+        <figure class="clip"><video controls playsinline preload="none" poster="https://fieldguide.afterhoursco.dev/promo/neonfocus-ad.jpg" aria-label="Neon Focus trailer"><source src="https://fieldguide.afterhoursco.dev/promo/neonfocus-ad.mp4" type="video/mp4"></video><figcaption>Neon Focus gameplay trailer</figcaption></figure>
+      </li>
+      <li class="c-pup">
+        <div>
+          <h3>Pup Sort: After Hours</h3>
+          <p class="kind">Phone game</p>
+        </div>
+        <p class="what">A late-night sorting puzzle: hop puppies between neon perches until every perch holds a single breed. Collect 12 original breeds, wake up sleepy pups, beat tight move limits and take on the daily Midnight Walk. Works offline, no ads.</p>
+        <p class="go"><span class="pill live">Live</span><br><a href="https://pupsort.afterhoursco.dev">Play Pup Sort</a><br><span class="pill">Google Play and App Store soon</span></p>
+      </li>
+      <li class="c-stack">
+        <div>
+          <h3>Neon Stack</h3>
+          <p class="kind">Phone puzzle game</p>
+        </div>
+        <p class="what">A block puzzle on an 8&times;8 board: drag pieces in, clear lines, and chase your best score. It has a daily puzzle, a quest map, a lucky spin, unlockable skins, and power-ups that blast or smash blocks. Works offline, no ads.</p>
+        <p class="go"><span class="pill live">Live</span><br><a href="https://neonstack.afterhoursco.dev">Play Neon Stack</a><br><span class="pill">Google Play and App Store soon</span><br><a href="/neonstack/">App info and support</a></p>
+        <figure class="clip"><video controls playsinline preload="none" poster="https://fieldguide.afterhoursco.dev/promo/neonstack-ad.jpg" aria-label="Neon Stack trailer"><source src="https://fieldguide.afterhoursco.dev/promo/neonstack-ad.mp4" type="video/mp4"></video><figcaption>Neon Stack gameplay trailer</figcaption></figure>
+      </li>
+      <li class="c-field">
+        <div>
+          <h3>HVAC Field Guide</h3>
+          <p class="kind">Phone app for techs</p>
+        </div>
+        <p class="what">Step-by-step troubleshooting for newer HVAC techs: guided diagnostics, error codes for 14 brands, install and maintenance guides, NH and VT code lookup, service calculators and a job log. It works offline, because basements and attics don't get signal.</p>
+        <p class="go"><span class="pill">Private beta</span><br><a href="https://fieldguide.afterhoursco.dev/beta.html">Join with an invite code</a><br><a href="mailto:hq@afterhoursco.dev?subject=HVAC%20Field%20Guide%20beta">Ask for an invite</a></p>
+        <figure class="clip"><video controls playsinline preload="none" poster="https://fieldguide.afterhoursco.dev/promo/hvac-field-guide-tutorial.jpg" aria-label="HVAC Field Guide full tutorial"><source src="https://fieldguide.afterhoursco.dev/promo/hvac-field-guide-tutorial.mp4" type="video/mp4"></video><figcaption>Full tutorial: every feature and where to find it (6 min)</figcaption></figure>
+      </li>
+    </ul>
+  </section>
+
+  <section class="wrap about" aria-labelledby="about-h">
+    <div>
+      <h2 id="about-h">Two shifts</h2>
+      <ul class="shift" aria-label="A typical day">
+        <li><time>7 AM</time><span>Day job starts</span></li>
+        <li><time>4 PM</time><span>Day job ends</span></li>
+        <li><time>6 PM</time><span>Dinner, then the shop opens</span></li>
+        <li><time>1 AM</time><span>One more build</span></li>
+      </ul>
+    </div>
+    <div>
+      <p>I'm Roger. I have a day job, and I build software in the hours after it.</p>
+      <p>That shapes how I build. Tools should still make sense when you're tired and it's midnight, so I keep them simple and make the errors say what to do next.</p>
+      <p>After Hours Co. is the name all of it ships under.</p>
+    </div>
+  </section>
+
+  <section class="wrap contact" id="contact" aria-labelledby="contact-h">
+    <h2 id="contact-h"><a href="mailto:hq@afterhoursco.dev">hq@afterhoursco.dev</a></h2>
+    <p>Have an app or a tool you need built? Tell me what it should do and who will use it. I answer after the shift.</p>
+  </section>
+</main>
+
+<footer class="wrap">
+  <p>© <span id="yr">2026</span> After Hours Co LLC · <a href="/neonstack/privacy.html">Neon Stack privacy</a></p>
+</footer>
+
+<script>
+  (function(){
+    var clock = document.getElementById('clock');
+    var status = document.getElementById('status');
+    var where = document.getElementById('where');
+    document.getElementById('yr').textContent = new Date().getFullYear();
+    function nhNow(){
+      var parts = new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',minute:'2-digit',hour12:true,weekday:'short'}).formatToParts(new Date());
+      var o = {}; parts.forEach(function(p){ o[p.type] = p.value; });
+      var h24 = Number(new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',hour:'numeric',hour12:false}).format(new Date())) % 24;
+      return {h:o.hour, m:o.minute, ap:o.dayPeriod, h24:h24, wd:o.weekday};
+    }
+    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var wasOpen = null;
+    function tick(){
+      var t = nhNow();
+      clock.innerHTML = t.h + ':' + t.m + '<span class="ampm">' + t.ap + '</span>';
+      var weekend = (t.wd === 'Sat' || t.wd === 'Sun');
+      var open = weekend || t.h24 >= 18 || t.h24 < 2;
+      clock.classList.toggle('open', open);
+      if (open !== wasOpen) {
+        if (open && !reduce) { clock.classList.remove('flicker'); void clock.offsetWidth; clock.classList.add('flicker'); }
+        wasOpen = open; sky.setOpen(open);
+      }
+      if (open) {
+        status.textContent = weekend ? "It's the weekend. The shop is open." : "The day job's done. The shop is open.";
+      } else if (t.h24 < 7) {
+        status.textContent = "Shop's closed. Back on the bench after work.";
+      } else {
+        status.textContent = "At the day job. The shop opens at 6.";
+      }
+      where.textContent = 'New Hampshire time';
+    }
+    var sky = (function(){
+      var cv = document.getElementById('sky'), cx = cv.getContext('2d');
+      var seed = 7, rnd = function(){ seed = (seed*16807) % 2147483647; return (seed-1)/2147483646; };
+      var W=0,H=0,dpr=1,bld=[],stars=[],lit=false;
+      function build(){
+        seed = 7; bld=[]; stars=[];
+        var x=0, groundH = Math.min(200, H*.42);
+        while(x < W){
+          var w = 40 + rnd()*90, h = groundH*(.35 + rnd()*.65), wins=[];
+          for(var wy=h-16; wy>14; wy-=16){ for(var wx=8; wx<w-10; wx+=13){ wins.push({x:wx,y:wy,on:rnd()<.42,warm:rnd()<.78}); } }
+          bld.push({x:x,w:w,h:h,wins:wins,tone:rnd()}); x += w + 2 + rnd()*6;
+        }
+        for(var i=0;i<70;i++) stars.push({x:rnd()*W,y:rnd()*(H*.55),r:rnd()*1.2+.3,a:.2+rnd()*.5});
+      }
+      function draw(){
+        cx.clearRect(0,0,W,H);
+        stars.forEach(function(s){ cx.globalAlpha=s.a; cx.fillStyle='#E9E6F2'; cx.beginPath(); cx.arc(s.x,s.y,s.r,0,6.283); cx.fill(); });
+        cx.globalAlpha=1;
+        bld.forEach(function(b){
+          var top = H - b.h;
+          cx.fillStyle = b.tone < .5 ? '#0E1330' : '#121A3D';
+          cx.fillRect(b.x, top, b.w, b.h);
+          b.wins.forEach(function(w){
+            var on = lit ? w.on : (w.on && w.warm && w.y > b.h*.7 && w.x < 30);
+            if(!on){ cx.fillStyle='rgba(169,168,198,.07)'; cx.fillRect(b.x+w.x, H-w.y, 6, 8); return; }
+            var c = w.warm ? '245,165,36' : '111,211,193';
+            cx.shadowColor='rgba('+c+',.9)'; cx.shadowBlur=8;
+            cx.fillStyle='rgba('+c+',.85)'; cx.fillRect(b.x+w.x, H-w.y, 6, 8);
+            cx.shadowBlur=0;
+          });
+        });
+      }
+      function size(){
+        var r = cv.getBoundingClientRect(); dpr = Math.min(window.devicePixelRatio||1,2);
+        W = r.width; H = r.height; cv.width = W*dpr; cv.height = H*dpr; cx.setTransform(dpr,0,0,dpr,0,0);
+        build(); draw();
+      }
+      window.addEventListener('resize', size);
+      size();
+      if(!reduce){
+        setInterval(function(){
+          if(!lit || !bld.length) return;
+          var b = bld[Math.floor(Math.random()*bld.length)], w = b.wins[Math.floor(Math.random()*b.wins.length)];
+          if(w){ w.on = !w.on; draw(); }
+        }, 1400);
+      }
+      return { setOpen: function(o){ lit = o; draw(); } };
+    })();
+    tick();
+    setInterval(tick, 15000);
+  })();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>
