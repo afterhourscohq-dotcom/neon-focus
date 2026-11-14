@@ -1,0 +1,39 @@
+name: Store assets
+
+on:
+  push:
+    branches: [main]
+    paths: ['www/**', 'tools/**', '.github/workflows/store-assets.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  graphics:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install tools
+        run: |
+          pip install pillow playwright
+          python -m playwright install --with-deps chromium
+      - name: Make icons, feature graphic and screenshots
+        run: |
+          python tools/icons.py --store store/graphics
+          python tools/store_shots.py www store/screenshots
+          mv store/screenshots/feature-graphic-1024x500.png store/graphics/
+          find store -name '*.png' | sort
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-graphics
+          path: store/
+      - name: Save into the repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add store
+          git diff --cached --quiet && echo "No changes" || (git commit -m "Update store graphics" && git push)
